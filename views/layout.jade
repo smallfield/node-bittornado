@@ -1,0 +1,45 @@
+!!!
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/bootstrap/css/bootstrap.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+    script(src='/socket.io/socket.io.js')
+    script(type='text/javascript')
+       var socket = io.connect();
+       socket.on('reload', function(data){
+        data=eval('('+data+')');
+            $('#list').empty().append('<tr><th>名前</th><th>Percent</th><th>残り時間</th><th>下り速度</th><th>上り速度</th>');
+        console.log(data);
+        
+         for(var url in data){
+           $('#list').append('<tr><td>'
+                             + data[url].name
+                             +'</td><td><div style="margin-bottom: 0px;" class="progress progress-striped active"><div class="bar" style="width: '
+                             + data[url].percent
+                             + '%;">'
+                             + data[url].percent
+                             + '%</div></div></td><td>'
+                             + data[url].timeleft
+                             + '</td>'
+                             + '<td>'
+                             + data[url].downrate
+                             + '</td>'
+                             + '<td>'
+                             + data[url].uprate
+                             + '</td>'
+                             + '</tr>');
+        }
+       });
+
+
+    body 
+        div.navbar.navbar-fixed-top
+            div.navbar-inner
+                div.container 
+                    a(href='#').brand #{title}
+                             
+    div.container!= body 
+        footer 
+            p &copy; small_field 
