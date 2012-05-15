@@ -61,7 +61,6 @@ addDown = function(url) {
   sendData();
 
   proc.stdout.on('data', function(data){
-    // console.log(data);
     // 名称取得
     if(/^saving: +(.*)/m.test(data)){
       console.log(RegExp.$1);
@@ -70,29 +69,27 @@ addDown = function(url) {
 
     // download rateを取得
     if(/.*download rate: +([ 0-9kB/m\.]+s)/m.test(data)){
-      // console.log(RegExp.$1);
       downs[key].downrate = RegExp.$1;
     }
 
     // time leftを取得
     if(/.*upload rate: +([ 0-9kB/m\.]+s)/m.test(data)){    
-      // console.log(RegExp.$1);
       downs[key].uprate = RegExp.$1;
     }
 
     // time leftを取得
     if(/.*time left: +([0-9][ 0-9minsechour]+)/m.test(data)){
-      // console.log(RegExp.$1);
       downs[key].timeleft = RegExp.$1;
     }
     // percent doneを取得
     if(/.*percent done: +([\.\d]+)/m.test(data)){
-      // console.log(RegExp.$1);
       downs[key].percent = RegExp.$1;
       if(RegExp.$1 == "100" && downs[key].timeleft != "") {
         proc.kill('SIGKILL');
         downs[key].downrate="-";
         downs[key].uprate="-";
+        downs[key].timeleft="-";
+        console.log("Download end. Process has killed.");
       }
     }
 
@@ -122,6 +119,16 @@ app.post('/add', function(req, res){
     url: url
   });
 });
+
+app.get('/add', function(req, res){
+  var url = req.param('url');
+  addDown(url);
+  res.render('index', {
+    title: 'Express',
+    url: url
+  });
+});
+
 
 
 
