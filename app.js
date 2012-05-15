@@ -37,6 +37,7 @@ var io = require('socket.io').listen(app);
 
 io.sockets.on('connection', function(socket) {
   sockets[socket.id] = socket;
+  socket.emit('reload',  JSON.stringify(downs));
   socket.on('disconect', function(){
     delete sockets[socket.id];
   });
