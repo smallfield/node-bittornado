@@ -56,9 +56,14 @@ addDown = function(url) {
   down.percent = '0.0';
   var key = crypto.createHash('sha1').update(url).digest(encoding='hex');  
   downs[key] = down;
+  downs[key].downrate="-";
+  downs[key].uprate="-";
+  downs[key].timeleft="-";
+  downs[key].name="";
+
 
   // 新しいデータをブロードキャスト
-  sendData();
+  sendData('reload', JSON.stringify(downs));
 
   proc.stdout.on('data', function(data){
     // 名称取得
@@ -93,32 +98,37 @@ addDown = function(url) {
       }
     }
 
+
     // 新しいデータをブロードキャスト
-    sendData();
+    sendData('reload', JSON.stringify(downs));
+
   });
 
   proc.on('exit', function(){
-    // process.exit(0);
-  });
-}
+    if(downs[key].percent != 100) {
+      sendData('error', JSON.stringify({message:'ダウンロードプロセスが強制終了されました。' }));
+      delete downs[key];
+        }
+        });
+      }
 
-sendData = function(){
-  for (var n in sockets){
-    sockets[n].emit("reload", JSON.stringify(downs));
-  }
-}
+      sendData = function(type, content){
+        for (var n in sockets){
+          sockets[n].emit(type, content);
+        }
+      }
 
 
-// Routes
-app.get('/', routes.index);
-app.post('/add', function(req, res){
-  var url = req.param('url');
-  addDown(url);
-  res.render('index', {
-    title: 'node-bittornado',
-    url: url
-  });
-});
+      // Routes
+      app.get('/', routes.index);
+      app.post('/add', function(req, res){
+        var url = req.param('url');
+        addDown(url);
+        res.render('index', {
+          title: 'node-bittornado',
+          url: url
+        });
+      });
 
 app.get('/add', function(req, res){
   var url = req.param('url');
