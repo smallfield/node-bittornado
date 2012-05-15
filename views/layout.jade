@@ -10,7 +10,7 @@ html
        var socket = io.connect();
        socket.on('reload', function(data){
         data=eval('('+data+')');
-            $('#list').empty().append('<tr><th>名前</th><th>Percent</th><th>残り時間</th><th>下り速度</th><th>上り速度</th>');
+            $('#list').empty().append('<tr><th>名前</th><th>進捗状況</th><th>残り時間</th><th>下り速度</th><th>上り速度</th>');
         console.log(data);
         
          for(var url in data){
@@ -38,7 +38,7 @@ html
         div.navbar.navbar-fixed-top
             div.navbar-inner
                 div.container 
-                    a(href='#').brand #{title}
+                    a(href='/').brand #{title}
                              
     div.container!= body 
         footer 

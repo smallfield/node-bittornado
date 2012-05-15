@@ -115,7 +115,7 @@ app.post('/add', function(req, res){
   var url = req.param('url');
   addDown(url);
   res.render('index', {
-    title: 'Express',
+    title: 'node-bittornado',
     url: url
   });
 });
@@ -124,7 +124,7 @@ app.get('/add', function(req, res){
   var url = req.param('url');
   addDown(url);
   res.render('index', {
-    title: 'Express',
+    title: 'node-bittornado',
     url: url
   });
 });
