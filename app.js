@@ -11,6 +11,9 @@ var spawn = require('child_process').spawn;
 var downs = {};
 var sockets = {};
 
+var wait = 1000;
+var lastsend = 0;
+
 var app = module.exports = express.createServer();
 
 // Configuration
@@ -60,15 +63,15 @@ addDown = function(url) {
   downs[key].uprate="-";
   downs[key].timeleft="-";
   downs[key].name="";
+  downs[key].kill=false;
 
 
   // 新しいデータをブロードキャスト
-  sendData('reload', JSON.stringify(downs));
+  sendData('reload', JSON.stringify(downs), true);
 
   proc.stdout.on('data', function(data){
     // 名称取得
     if(/^saving: +(.*)/m.test(data)){
-      console.log(RegExp.$1);
       downs[key].name = RegExp.$1;
     }
 
@@ -98,37 +101,47 @@ addDown = function(url) {
       }
     }
 
+    // 終了割り込み処理
+    if(downs[key].kill) {
+      proc.kill('SIGKILL');
+      delete downs[key];
+      sendData('reload', JSON.stringify(downs), true);      
+    }
 
     // 新しいデータをブロードキャスト
-    sendData('reload', JSON.stringify(downs));
+    sendData('reload', JSON.stringify(downs), false);
 
   });
 
   proc.on('exit', function(){
-    if(downs[key].percent != 100) {
+    if(downs[key] && downs[key].percent && downs[key].percent != 100) {
       sendData('error', JSON.stringify({message:'ダウンロードプロセスが強制終了されました。' }));
       delete downs[key];
-        }
-        });
-      }
+    }
+  });
+}
 
-      sendData = function(type, content){
-        for (var n in sockets){
-          sockets[n].emit(type, content);
-        }
-      }
+sendData = function(type, content, force){
+  if (new Date().getTime() - lastsend > wait || force) {
+    for (var n in sockets){
+      sockets[n].emit(type, content);
+    }
+    lastsend = new Date().getTime();
+  }
+
+}
 
 
-      // Routes
-      app.get('/', routes.index);
-      app.post('/add', function(req, res){
-        var url = req.param('url');
-        addDown(url);
-        res.render('index', {
-          title: 'node-bittornado',
-          url: url
-        });
-      });
+// Routes
+app.get('/', routes.index);
+app.post('/add', function(req, res){
+  var url = req.param('url');
+  addDown(url);
+  res.render('index', {
+    title: 'node-bittornado',
+    url: url
+  });
+});
 
 app.get('/add', function(req, res){
   var url = req.param('url');
@@ -139,8 +152,12 @@ app.get('/add', function(req, res){
   });
 });
 
-
-
+app.get('/del', function(req, res){
+  var key = req.param('key');
+  if(downs[key]) {
+    downs[key].kill = true;
+  }
+});
 
 app.listen(3000, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
