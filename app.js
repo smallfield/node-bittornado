@@ -72,31 +72,43 @@ addDown = function(url) {
   proc.stdout.on('data', function(data){
     // 名称取得
     if(/^saving: +(.*)/m.test(data)){
-      downs[key].name = RegExp.$1;
+      if(downs[key]) {
+        downs[key].name = RegExp.$1;
+      }
     }
 
     // download rateを取得
     if(/.*download rate: +([ 0-9kB/m\.]+s)/m.test(data)){
-      downs[key].downrate = RegExp.$1;
+      if(downs[key]) {      
+        downs[key].downrate = RegExp.$1;
+      }
     }
 
     // time leftを取得
     if(/.*upload rate: +([ 0-9kB/m\.]+s)/m.test(data)){    
-      downs[key].uprate = RegExp.$1;
+      if(downs[key]) {
+        downs[key].uprate = RegExp.$1;
+      }
     }
 
     // time leftを取得
     if(/.*time left: +([0-9][ 0-9minsechour]+)/m.test(data)){
-      downs[key].timeleft = RegExp.$1;
+      if(downs[key]) {
+        downs[key].timeleft = RegExp.$1;
+      }
     }
     // percent doneを取得
     if(/.*percent done: +([\.\d]+)/m.test(data)){
-      downs[key].percent = RegExp.$1;
+      if(downs[key]) {
+        downs[key].percent = RegExp.$1;
+      }
       if(RegExp.$1 == "100" && downs[key].timeleft != "") {
         proc.kill('SIGKILL');
-        downs[key].downrate="-";
-        downs[key].uprate="-";
-        downs[key].timeleft="-";
+        if(downs[key]) {
+          downs[key].downrate="-";
+          downs[key].uprate="-";
+          downs[key].timeleft="-";
+        }
         console.log("Download end. Process has killed.");
       }
     }
